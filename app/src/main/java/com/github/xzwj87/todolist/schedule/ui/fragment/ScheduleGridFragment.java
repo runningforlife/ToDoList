@@ -58,7 +58,7 @@ public class ScheduleGridFragment extends BaseFragment implements
 
     @Bind(R.id.schedule_grid_view) GridView mScheduleGridView;
 
-    public interface GridCallBacks{
+    public interface GridCallBacks extends BaseFragment.DataChangedCallback{
         void onGridItemSelected(long id, ScheduleGridAdapter.GridViewHolder vh);
     }
 
@@ -162,6 +162,7 @@ public class ScheduleGridFragment extends BaseFragment implements
     public void onDataSetChanged() {
         Log.v(LOG_TAG, "onDataSetChanged()");
         loadScheduleData();
+        mCallBacks.onDataChanged(mScheduleObserver.getScheduleCategoryNumber());
     }
 
     private void initialize(){
@@ -231,6 +232,7 @@ public class ScheduleGridFragment extends BaseFragment implements
         mScheduleGridView.invalidateViews();
         mScheduleGridAdapter.notifyDataSetChanged();
         mScheduleGridView.setAdapter(mScheduleGridAdapter);
+        mCallBacks.onDataChanged(mScheduleObserver.getScheduleCategoryNumber());
     }
 
     private void createDialog(ScheduleModel model,int position){

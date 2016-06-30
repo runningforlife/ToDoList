@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
 
 import com.github.xzwj87.todolist.R;
 
@@ -17,12 +18,17 @@ public class SharePreferenceHelper {
 
     private static SharePreferenceHelper mInstance;
     private SharedPreferences mSharePref;
+    private SharedPreferences.Editor mPrefEditor;
     private Context mContext;
     private Resources mResources;
 
     private String mAlarmRingtoneKey;
     private String mAlarmVolumeKey;
     private String mAlarmDurationKey;
+
+    private String mViewChooseKey;
+    private static final int sDefaultView = 0; // 0 - ListView; 1 - GridView
+
 
 
     public static SharePreferenceHelper getInstance(Context context){
@@ -37,6 +43,9 @@ public class SharePreferenceHelper {
         this.mContext = context;
         this.mResources = mContext.getResources();
         this.mSharePref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        mViewChooseKey = mResources.getString(R.string.view_choose_key);
+        mPrefEditor = mSharePref.edit();
 
         mAlarmRingtoneKey = mResources.getString(R.string.settings_alarm_ringtone_key);
         mAlarmVolumeKey = mResources.getString(R.string.settings_alarm_volume_key);
@@ -59,8 +68,20 @@ public class SharePreferenceHelper {
 
     public int getAlarmDuration(){
         String defaultVal = mResources.getString(R.string.settings_alarm_duration_default);
-        String duration = mSharePref.getString(mAlarmDurationKey,defaultVal);
+        String duration = mSharePref.getString(mAlarmDurationKey, defaultVal);
 
         return Integer.parseInt(duration)*1000;
+    }
+
+    public void setHomeView(int view){
+        Log.v(TAG, "setHomeView: view = " + view);
+        mPrefEditor.putInt(mViewChooseKey,view);
+        mPrefEditor.commit();
+    }
+
+    public int getHomeView() {
+        int view = mSharePref.getInt(mViewChooseKey, sDefaultView);
+        Log.v(TAG, "getHomeView: view = " + view);
+        return view;
     }
 }

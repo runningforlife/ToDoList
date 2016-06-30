@@ -81,9 +81,8 @@ public class ScheduleListFragment extends BaseFragment implements
         loadScheduleListData();
     }
 
-    public interface Callbacks {
+    public interface Callbacks extends BaseFragment.DataChangedCallback{
         void onItemSelected(long id, ScheduleAdapter.ViewHolder vh);
-        void onDataChanged(ScheduleDataObserver.ScheduleCategoryNumber sn);
     }
 
     private static Callbacks sDummyCallbacks = null;

@@ -76,10 +76,12 @@
     <string name="settings_alarm_duration_key" translatable="false">alarm_duration</string>
     <string name="settings_alarm_ringtone_key" translatable="false">alarm_ringtone</string>
 
+    <string name="view_choose_key">com.github.xzwj87.todolist.PREFERENCE_VIEW_CHOOSE_KEY</string>
+
     <string name="about_todolist">Todo List is a light APP to record \n
     what you want to do in your daily life. You can add,edit and delete\n
-    your own to-do-list easily. It is mainly developed by @TianXing Li and\
-    @ZhanNeng wang @XuNing</string>
+    your own to-do-list easily. It is mainly developed by @<b>TianXing Li</b> and\n
+    @<b>ZhanNeng wang</b> @<b>Xu Ning</b></string>
 
     <string name="share_result_success">Share Success</string>
     <string name="share_result_cancel">User Cancel Share</string>

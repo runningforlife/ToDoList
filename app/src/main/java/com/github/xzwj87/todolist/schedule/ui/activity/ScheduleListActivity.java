@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -29,12 +30,14 @@ import com.github.xzwj87.todolist.schedule.ui.SearchSuggestionView;
 import com.github.xzwj87.todolist.schedule.ui.adapter.ScheduleAdapter;
 import com.github.xzwj87.todolist.schedule.ui.adapter.ScheduleGridAdapter;
 import com.github.xzwj87.todolist.schedule.ui.adapter.SearchSuggestionAdapter;
+import com.github.xzwj87.todolist.schedule.ui.fragment.BaseFragment;
 import com.github.xzwj87.todolist.schedule.ui.fragment.ScheduleDetailFragment;
 import com.github.xzwj87.todolist.schedule.ui.fragment.ScheduleGridFragment;
 import com.github.xzwj87.todolist.schedule.ui.fragment.ScheduleListFragment;
 import com.github.xzwj87.todolist.schedule.ui.model.ScheduleModel;
 import com.github.xzwj87.todolist.schedule.ui.model.ScheduleSuggestionModel;
 import com.github.xzwj87.todolist.settings.SettingsActivity;
+import com.github.xzwj87.todolist.settings.SharePreferenceHelper;
 
 import java.util.List;
 
@@ -60,6 +63,9 @@ public class ScheduleListActivity extends BaseActivity
     private String mTypeFilter;
     private SearchView mSearchView;
     private SearchSuggestionAdapter mSuggestionAdapter;
+    // manage view setting
+    private SharePreferenceHelper mPrefHelper;
+    private int mCurrentView; // 0 - ListView; 1 - GridView
 
     @Inject SearchSuggestionPresenterImpl mPresenter;
     private ScheduleComponent mScheduleComponent;
@@ -98,8 +104,14 @@ public class ScheduleListActivity extends BaseActivity
         mTwoPane = findViewById(R.id.schedule_detail_container) != null;
         Log.v(LOG_TAG, "onCreate(): mTwoPane = " + mTwoPane);
 
+        mPrefHelper = SharePreferenceHelper.getInstance(this);
+        mCurrentView = mPrefHelper.getHomeView();
+
         if (savedInstanceState == null) {
-            ScheduleListFragment fragment = ScheduleListFragment.newInstanceByType(null);
+            BaseFragment fragment = ScheduleListFragment.newInstanceByType(null);
+            if(mCurrentView == 1) {
+                fragment = ScheduleGridFragment.getInstanceByType(null);
+            }
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.schedule_list_container, fragment)
                     .commit();
@@ -107,6 +119,7 @@ public class ScheduleListActivity extends BaseActivity
 
         sUndoneScheduleTitle = getResources ().getString(R.string.schedule_type_all);
         sDoneScheduleTitle = getResources().getString(R.string.schedule_done);
+
         initializeInjector();
         initializeView();
 
@@ -131,32 +144,45 @@ public class ScheduleListActivity extends BaseActivity
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         int id = item.getItemId();
+        mCurrentView = mPrefHelper.getHomeView();
 
-        if (id == R.id.nav_schedule_type_all) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_all");
-            mTypeFilter = null;
-            replaceScheduleListWithType(null);
-        } else if (id == R.id.nav_done) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_done");
-            mTypeFilter = ScheduleListFragment.SCHEDULE_TYPE_DONE;
-            replaceScheduleListWithType(mTypeFilter);
-        } else if (id == R.id.nav_schedule_type_meeting) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_meeting");
-            mTypeFilter = ScheduleModel.SCHEDULE_TYPE_MEETING;
-            replaceScheduleListWithType(mTypeFilter);
-        } else if (id == R.id.nav_schedule_type_entertainment) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_entertainment");
-            mTypeFilter = ScheduleModel.SCHEDULE_TYPE_ENTERTAINMENT;
-            replaceScheduleListWithType(mTypeFilter);
-        } else if (id == R.id.nav_date) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_date");
-            mTypeFilter = ScheduleModel.SCHEDULE_TYPE_DATE;
-            replaceScheduleListWithType(mTypeFilter);
-        } else if (id == R.id.nav_settings) {
-            Log.v(LOG_TAG, "onNavigationItemSelected(): nav_settings");
+        switch (id) {
+            case(R.id.nav_schedule_type_all):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_all");
+                mTypeFilter = null;
+                break;
+            case(R.id.nav_done):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_done");
+                mTypeFilter = ScheduleListFragment.SCHEDULE_TYPE_DONE;
+                break;
+            case(R.id.nav_schedule_type_meeting):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_meeting");
+                mTypeFilter = ScheduleModel.SCHEDULE_TYPE_MEETING;
+                break;
+            case(R.id.nav_schedule_type_entertainment):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_schedule_type_entertainment");
+                mTypeFilter = ScheduleModel.SCHEDULE_TYPE_ENTERTAINMENT;
+                break;
+            case(R.id.nav_date):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_date");
+                mTypeFilter = ScheduleModel.SCHEDULE_TYPE_DATE;
+                break;
+            case(R.id.nav_settings):
+                Log.v(LOG_TAG, "onNavigationItemSelected(): nav_settings");
 
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                break;
+            default:
+                break;
+        }
+
+        if(id != R.id.nav_settings){
+            if(mCurrentView == 0){
+                replaceScheduleListWithType(mTypeFilter);
+            } else {
+                replaceWithGridFragment(mTypeFilter);
+            }
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -180,9 +206,12 @@ public class ScheduleListActivity extends BaseActivity
         int id = menu.getItemId();
         if(id == R.id.action_grid_view){
             replaceWithGridFragment(mTypeFilter);
+            mPrefHelper.setHomeView(1);
             return true;
         }else if(id == R.id.action_list_view){
             replaceScheduleListWithType(mTypeFilter);
+            mPrefHelper.setHomeView(0);
+            return true;
         }
 
         return false;

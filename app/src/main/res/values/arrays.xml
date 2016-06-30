@@ -21,21 +21,21 @@
     <string-array name="dummy_values">
     </string-array>
 
-    <string-array name="dialog_choice_list">
+    <string-array name="dialog_choice_list" translatable="false">
         <item>share</item>
         <item>edit</item>
         <item>delete</item>
         <item>marked as done</item>
     </string-array>
 
-    <string-array name="schedule_done_dialog_choice_list">
+    <string-array name="schedule_done_dialog_choice_list" translatable="false">
         <item>share</item>
         <item>edit</item>
         <item>delete</item>
         <item>marked as undone</item>
     </string-array>
 
-    <string-array name="schedule_priority_picker_choice_list">
+    <string-array name="schedule_priority_picker_choice_list" translatable="false">
         <item>highest priority</item>
         <item>high priority</item>
         <item>medium priority</item>
